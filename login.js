@@ -6,6 +6,21 @@ const {
 const client = new CognitoIdentityProviderClient();
 
 exports.handler = async (event) => {
+    const corsHeaders = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "POST,OPTIONS",
+    };
+
+    // Handle preflight (OPTIONS) requests
+    if (event.httpMethod === 'OPTIONS') {
+        return {
+            statusCode: 200,
+            headers: corsHeaders,
+            body: JSON.stringify({ message: 'CORS preflight handled' }),
+        };
+    }
+
     try {
         const body = JSON.parse(event.body || '{}');
         const { username, password } = body;
@@ -13,6 +28,7 @@ exports.handler = async (event) => {
         if (!username || !password) {
             return {
                 statusCode: 400,
+                headers: corsHeaders,
                 body: JSON.stringify({ error: 'Username and password are required' }),
             };
         }
@@ -30,6 +46,7 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 200,
+            headers: corsHeaders,
             body: JSON.stringify({
                 message: "Login successful",
                 idToken: response.AuthenticationResult.IdToken,
@@ -44,6 +61,7 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 401,
+            headers: corsHeaders,
             body: JSON.stringify({ error: errorMessage }),
         };
     }

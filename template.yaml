@@ -30,3 +30,8 @@ Resources:
             RestApiId: !Ref LoginApiGateway
             Path: /login
             Method: POST
+            Cors:
+              AllowMethods: "'POST,OPTIONS'"
+              AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              AllowOrigin: "'*'"
+              
