@@ -7,6 +7,10 @@ Resources:
     Properties:
       Name: bgb-ceportal-auth-api
       StageName: prod
+      Cors:
+        AllowMethods: "'POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+        AllowOrigin: "'*'"
 
   LoginFunction:
     Type: AWS::Serverless::Function
@@ -30,8 +34,4 @@ Resources:
             RestApiId: !Ref LoginApiGateway
             Path: /login
             Method: POST
-            Cors:
-              AllowMethods: "'POST,OPTIONS'"
-              AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
-              AllowOrigin: "'*'"
               
