@@ -1,6 +1,7 @@
 const {
     CognitoIdentityProviderClient,
     InitiateAuthCommand,
+    GetUserCommand,
 } = require("@aws-sdk/client-cognito-identity-provider");
 
 const client = new CognitoIdentityProviderClient();
@@ -13,27 +14,28 @@ exports.handler = async (event) => {
     };
 
     // Handle preflight (OPTIONS) requests
-    if (event.httpMethod === 'OPTIONS') {
+    if (event.httpMethod === "OPTIONS") {
         return {
             statusCode: 200,
             headers: corsHeaders,
-            body: JSON.stringify({ message: 'CORS preflight handled' }),
+            body: JSON.stringify({ message: "CORS preflight handled" }),
         };
     }
 
     try {
-        const body = JSON.parse(event.body || '{}');
+        const body = JSON.parse(event.body || "{}");
         const { username, password } = body;
 
         if (!username || !password) {
             return {
                 statusCode: 400,
                 headers: corsHeaders,
-                body: JSON.stringify({ error: 'Username and password are required' }),
+                body: JSON.stringify({ error: "Username and password are required" }),
             };
         }
 
-        const command = new InitiateAuthCommand({
+        // Step 1: Authenticate the user
+        const authCommand = new InitiateAuthCommand({
             AuthFlow: "USER_PASSWORD_AUTH",
             ClientId: process.env.CLIENT_ID,
             AuthParameters: {
@@ -42,15 +44,39 @@ exports.handler = async (event) => {
             },
         });
 
-        const response = await client.send(command);
+        const authResponse = await client.send(authCommand);
+
+        const { AccessToken, IdToken } = authResponse.AuthenticationResult;
+
+        // Step 2: Get user attributes
+        const getUserCommand = new GetUserCommand({
+            AccessToken: AccessToken,
+        });
+
+        const userResponse = await client.send(getUserCommand);
+
+        // Convert attributes array to an object for easy access
+        const userAttributes = {};
+        for (const attr of userResponse.UserAttributes) {
+            userAttributes[attr.Name] = attr.Value;
+        }
+
+        // You can customize which attributes to send
+        const userProfile = {
+            firstName: userAttributes["given_name"] || "",
+            lastName: userAttributes["family_name"] || "",
+            email: userAttributes["email"] || "",
+            title: userAttributes["custom:title"] || "", // if title is stored as a custom attribute
+        };
 
         return {
             statusCode: 200,
             headers: corsHeaders,
             body: JSON.stringify({
                 message: "Login successful",
-                idToken: response.AuthenticationResult.IdToken,
-                accessToken: response.AuthenticationResult.AccessToken,
+                idToken: IdToken,
+                accessToken: AccessToken,
+                userProfile: userProfile,
             }),
         };
     } catch (err) {
