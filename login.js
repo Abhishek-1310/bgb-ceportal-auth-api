@@ -66,7 +66,8 @@ exports.handler = async (event) => {
             firstName: userAttributes["given_name"] || "",
             lastName: userAttributes["family_name"] || "",
             email: userAttributes["email"] || "",
-            title: userAttributes["custom:title"] || "", // if title is stored as a custom attribute
+            title: userAttributes["custom:title"] || "",
+            admin: userAttributes["custom:role"] || "" // if title is stored as a custom attribute
         };
 
         return {
