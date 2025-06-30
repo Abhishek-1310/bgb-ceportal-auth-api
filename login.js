@@ -75,6 +75,7 @@ exports.handler = async (event) => {
             headers: corsHeaders,
             body: JSON.stringify({
                 message: "Login successful",
+                username: userResponse.Username,
                 idToken: IdToken,
                 accessToken: AccessToken,
                 userProfile: userProfile,
