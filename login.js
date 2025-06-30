@@ -63,6 +63,7 @@ exports.handler = async (event) => {
 
         // You can customize which attributes to send
         const userProfile = {
+            username: userResponse.Username,
             firstName: userAttributes["given_name"] || "",
             lastName: userAttributes["family_name"] || "",
             email: userAttributes["email"] || "",
@@ -75,7 +76,6 @@ exports.handler = async (event) => {
             headers: corsHeaders,
             body: JSON.stringify({
                 message: "Login successful",
-                username: userResponse.Username,
                 idToken: IdToken,
                 accessToken: AccessToken,
                 userProfile: userProfile,
